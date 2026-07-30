@@ -9,6 +9,7 @@ green = (0,255,0)
 yellow = (255,255,0)
 white = (255,255,255)
 black = (0,0,0)
+bgblue = (26,189,230)
 
 class bird:
     def __init__(self):#not putting atributes because we are giving the actual values, like parameters in a function
@@ -26,16 +27,18 @@ class bird:
             self.velocity += self.gravity #incrementing gravity to allow bird to fall down
             self.y += self.velocity #showing that the velocity is bringing the ball down
 
-        def draw(self,screen):
-            pygame.draw.circle(screen,yellow,(self.x,int(self.y)),self.radius)# we are not putting x as an integer because x is already an integer
+        def draw(self,surface):
+            pygame.draw.circle(surface,yellow,(self.x,int(self.y)),self.radius)# we are not putting x as an integer because x is already an integer
             #initially both x and y are integers however y is affected by the velocity which inturn is affected by gravity
             #gravity is decreasing by 0.5 which which affects y by turning it into a float number instead of an integer
             #we must replace y as an interger since it is a co-ordinate and co-ordinates cannot be floats
 
+        def getrect(self,surface):
+            return pygame.Rect(surface,self.x-self.radius,self.y-self.radius,self.radius*2,self.radius*2)
 
 #pipes
 class pipes:
-    def init__(self,colour,x,y,length,width):
+    def __init__(self,colour,x,y,length,width):
         self.colour = colour
         self.x = x
         self.y = y
@@ -46,14 +49,16 @@ class pipes:
     def draw(self,surface):
         pygame.draw.rect(surface,self.colour,(self.x,self.y,self.length,self.width))
 
-pipe1 = pipes(green,0,350,100,35)
-pipe2 = pipes(green,500,350,70,35)
+pipe1 = pipes(green,250,0,35,350)
+pipe2 = pipes(green,250,400,35,100)
+bird1 = bird
 
 while True:
-    screen.fill((26,189,230))
-    for event in pygame.event():
+    screen.fill((bgblue))
+    for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
     pipe1.draw(screen)
     pipe2.draw(screen)
+    bird1.draw(screen)
     pygame.display.update()
