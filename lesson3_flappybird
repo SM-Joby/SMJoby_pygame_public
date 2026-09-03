@@ -1,6 +1,8 @@
-import pygame
+import pygame, random
 pygame.init()
-screen = pygame.display.set_mode([500,500])
+screen = pygame.display.set_mode([500,700])
+WIDTH = 500
+HEIGHT = 700
 pygame.display.set_caption("Flappybird!")
 
 red = (255,0,0)
@@ -11,17 +13,21 @@ white = (255,255,255)
 black = (0,0,0)
 bgblue = (26,189,230)
 
-class bird:
+gravity = 0.5
+jump = -10
+pipespeed = 4 # used later on in the code to make the screen appear that it is by moving the pipes across the screen
+
+class Bird:
     def __init__(self):#not putting atributes because we are giving the actual values, like parameters in a function
         self.x = 80
         self.y = 250
         self.radius = 20
         self.velocity = 0
         self.gravity = 0.5
-        self.jumpstrength = -8 # initisalising atributes, all of the above
+        # initisalising atributes, all of the above
         
         def jump (self):
-            self.velocity = self.jumpstrength
+            self.velocity = self.jump
             
         def move(self):
             self.velocity += self.gravity #incrementing gravity to allow bird to fall down
@@ -35,30 +41,44 @@ class bird:
 
         def getrect(self,surface):
             return pygame.Rect(surface,self.x-self.radius,self.y-self.radius,self.radius*2,self.radius*2)
-
+#when we want to draw a rectangle OBJECT its pygame.Rect with a capital r instead of drawing a rectangle using pygame.draw.rect
+         
+    
 #pipes
-class pipes:
-    def __init__(self,colour,x,y,length,width):
-        self.colour = colour
+class Pipes:
+    width = 70
+    gap = 180
+    def __init__(self,x): 
         self.x = x
-        self.y = y
-        self.length = length
-        self.width = width 
-        
+        self.height = random.randint(100,450)
+
+    def update(self):
+        self.x = self.x-pipespeed   
 
     def draw(self,surface):
-        pygame.draw.rect(surface,self.colour,(self.x,self.y,self.length,self.width))
+        pygame.draw.rect(surface,green,(self.x, 0, self.width, self.height))
+        pygame.draw.rect(surface,green,(self.x, self.height+self.gap, self.width, HEIGHT-self.height-self.gap))
 
-pipe1 = pipes(green,250,0,35,350)
-pipe2 = pipes(green,250,400,35,100)
-bird1 = bird
+    def collide(self,bird):
+        birdrect = bird.getrect()# calling function = class.function
+        toprect = pygame.Rect(self.x, 0, self.width, self.height)
+        bottomrect = pygame.Rect(self.x,self.height+self.gap, self.width, HEIGHT-self.height-self.gap)
+        return birdrect.colliderect(toprect) or birdrect.colliderect(bottomrect)
 
-while True:
-    screen.fill((bgblue))
+bird = Bird
+pipes = [Pipes(600)]#taking list bc we want two pipes, pipe1 and pipe2
+game = True
+
+while game:
+    screen.fill(bgblue)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-    pipe1.draw(screen)
-    pipe2.draw(screen)
-    bird1.draw(screen)
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                bird.jump()
+    bird.move()
+
+
+    
     pygame.display.update()
