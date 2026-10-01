@@ -1,21 +1,7 @@
 import pygame, random
 pygame.init()
-screen = pygame.display.set_mode([500,700])
-WIDTH = 500
-HEIGHT = 700
-pygame.display.set_caption("Flappybird!")
-
-red = (255,0,0)
-blue = (0,0,255)
-green = (0,255,0)
-yellow = (255,255,0)
-white = (255,255,255)
-black = (0,0,0)
-bgblue = (26,189,230)
 
 gravity = 0.5
-jump = -10
-pipespeed = 4 # used later on in the code to make the screen appear that it is by moving the pipes across the screen
 
 class Bird:
     def __init__(self):#not putting atributes because we are giving the actual values, like parameters in a function
@@ -24,23 +10,24 @@ class Bird:
         self.radius = 20
         self.velocity = 0
         self.gravity = 0.5
+        self.jumpstrength = -10
         # initisalising atributes, all of the above
         
         def jump (self):
-            self.velocity = self.jump
+            self.velocity = self.jumpstrength
             
         def move(self):
             self.velocity += self.gravity #incrementing gravity to allow bird to fall down
             self.y += self.velocity #showing that the velocity is bringing the ball down
 
         def draw(self,surface):
-            pygame.draw.circle(surface,yellow,(self.x,int(self.y)),self.radius)# we are not putting x as an integer because x is already an integer
+            pygame.draw.circle(surface,self.yellow,(self.x,int(self.y)),self.radius)# we are not putting x as an integer because x is already an integer
             #initially both x and y are integers however y is affected by the velocity which inturn is affected by gravity
             #gravity is decreasing by 0.5 which which affects y by turning it into a float number instead of an integer
             #we must replace y as an interger since it is a co-ordinate and co-ordinates cannot be floats
 
         def getrect(self,surface):
-            return pygame.Rect(surface,self.x-self.radius,self.y-self.radius,self.radius*2,self.radius*2)
+            return pygame.Rect(surface,self.x-self.radius,self.y-self.radius,self.radius*2,self.radius*2)#a rectangle for the ball (x,y,width,height)
 #when we want to draw a rectangle OBJECT its pygame.Rect with a capital r instead of drawing a rectangle using pygame.draw.rect
          
     
@@ -48,37 +35,58 @@ class Bird:
 class Pipes:
     width = 70
     gap = 180
-    def __init__(self,x): 
-        self.x = x
-        self.height = random.randint(100,450)
-
+    pipespeed = 4 # makes the screen appear as if it is by moving the pipes across the screen
+    def __init__(self,screenheight, screenwidth):
+        height = random.randint(120,screenheight-250)
+        self.top = pygame.Rect(screenwidth,0,self.WIDTH,height)#x,y,l,w
+        self.bottom = pygame.Rect(screenwidth, height+self.gap, self.WIDTH, screenheight-height-self.gap)#x,y,l,w
+        self.passed = False
+    
     def update(self):
-        self.x = self.x-pipespeed   
+        self.top.x = self.top.x - self.pipespeed  
+        self.bottom.x = self.bottom.x - self.pipespeed
 
     def draw(self,surface):
-        pygame.draw.rect(surface,green,(self.x, 0, self.width, self.height))
-        pygame.draw.rect(surface,green,(self.x, self.height+self.gap, self.width, HEIGHT-self.height-self.gap))
+        pygame.draw.rect(surface,self.green,self.top)
+        pygame.draw.rect(surface,self.green,self.bottom)
 
     def collide(self,bird):
-        birdrect = bird.getrect()# calling function = class.function
-        toprect = pygame.Rect(self.x, 0, self.width, self.height)
-        bottomrect = pygame.Rect(self.x,self.height+self.gap, self.width, HEIGHT-self.height-self.gap)
-        return birdrect.colliderect(toprect) or birdrect.colliderect(bottomrect)
+        return(bird.get_rect().colliderect(self.top)or bird.get_rect().colliderect(self.bottom))
 
-bird = Bird
-pipes = [Pipes(600)]#taking list bc we want two pipes, pipe1 and pipe2
-game = True
+    def offscreen(self):
+        return(self.top.right<0)#if self.top goes past 0 on the x axis it means the pipes are off the screen
 
-while game:
-    screen.fill(bgblue)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                bird.jump()
-    bird.move()
+class game:
+    def __init__(self):
+        self.WIDTH = 500
+        self.HEIGHT = 700
+        self.screen = pygame.display.set_mode([self.WIDTH, self.HEIGHT])
+        pygame.display.set_caption("Flappybird!")
+        self.clock = pygame.time.Clock()#used to control the pace of the game
+        self.font = pygame.font.SysFont("Calibri",30)
+        self.red = (255,0,0)
+        self.blue = (0,0,255)
+        self.green = (0,255,0)
+        self.yellow = (255,255,0)
+        self.white = (255,255,255)
+        self.black = (0,0,0)
+        self.bgblue = (26,189,230)
+        self.bird = Bird()
+        self.score = 0
+        self.pipes = [Pipes(self.HEIGHT,self.WIDTH)] # the reason the class is in the [] is because we have taken a list of the pipes further in the code
+        self.running = True
 
+    def handling_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+                pygame.quit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    self.bird.jump()
 
-    
-    pygame.display.update()
+    def update(self):
+        self.bird.update()
+        for pipe in self.pipes():
+
+            
