@@ -16,7 +16,7 @@ class Bird:
         def jump (self):
             self.velocity = self.jumpstrength
             
-        def move(self):
+        def update(self):
             self.velocity += self.gravity #incrementing gravity to allow bird to fall down
             self.y += self.velocity #showing that the velocity is bringing the ball down
 
@@ -100,7 +100,7 @@ class game:
         #keep the pipe on screen if it is visible, if not keep it out of the list /screen
         #we are using offscreen function to allow us to know which pipes to keep in or kick out of the list
         if (len(self.pipes) == 0 or self.pipes[-1].top.x < self.WIDTH-250):
-            self.pipes.append(Pipes(self.HEIGHT,self.WIDTH))
+            self.pipes.append(Pipe(self.HEIGHT,self.WIDTH))
         if (self.bird.y +self.bird.radius> self.HEIGHT or self.bird.y-self.bird.radius<0):#error, must take radius into account
             self.running = False
         pygame.display.update()
